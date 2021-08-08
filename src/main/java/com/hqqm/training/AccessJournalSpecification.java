@@ -26,15 +26,15 @@ public class AccessJournalSpecification {
     private final AccessJournalRepository accessJournalRepository;
 
     public Page<AccessJournal> findRegisterAccessJournal(AccessJournalFilter filter, Pageable pageable) {
-        Specification<AccessJournal> specification = initAccessJournalSpecification()
-                .and(ipLike(filter.getIp()))
+        Specification<AccessJournal> specification = ipLike(filter.getIp())
                 .and(groupIdEquals(filter.getUserGroupId()))
-                .and(startAndFinishDateBetween(filter.getStartDate(), filter.getFinishDate()));
+                .and(startAndFinishDateBetween(filter.getStartDate(), filter.getFinishDate()))
+                .and(fetchOrJoinEntities());
 
         return accessJournalRepository.findAll(specification, pageable);
     }
 
-    private Specification<AccessJournal> initAccessJournalSpecification() {
+    private Specification<AccessJournal> fetchOrJoinEntities() {
         return (root, query, builder) -> {
             if (currentQueryIsCountRecords(query)) {
                 root.join("userGroup");
@@ -47,33 +47,16 @@ public class AccessJournalSpecification {
     }
 
     private Specification<AccessJournal> ipLike(String ip) {
-        return (root, query, builder) -> {
-            if (ip == null) {
-                return null;
-            }
-
-            return builder.like(root.get("ip"), "%" + ip + "%");
-        };
+        return (root, query, builder) -> ip != null ? builder.like(root.get("ip"), "%" + ip + "%") : null;
     }
 
     private Specification<AccessJournal> groupIdEquals(Long userGroupId) {
-        return (root, query, builder) -> {
-            if (userGroupId == null) {
-                return null;
-            }
-
-            return builder.equal(root.get("userGroup").get("id"), userGroupId);
-        };
+        return (root, query, builder) -> userGroupId != null ? builder.equal(root.get("userGroup").get("id"), userGroupId) : null;
     }
 
     private Specification<AccessJournal> startAndFinishDateBetween(LocalDateTime startDate, LocalDateTime finishDate) {
-        return (root, query, builder) -> {
-            if (startDate != null && finishDate != null) {
-                return builder.between(root.get("startDate"), startDate, finishDate);
-            }
-
-            return null;
-        };
+        return (root, query, builder) ->
+                startDate != null && finishDate != null ? builder.between(root.get("startDate"), startDate, finishDate) : null;
     }
 
     private boolean currentQueryIsCountRecords(CriteriaQuery<?> criteriaQuery) {
