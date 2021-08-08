@@ -21,8 +21,8 @@ public class AccessJournalSpecificationHolder {
 
     public Page<AccessJournal> findAccessJournal(@NotNull AccessJournalFilter filter, Pageable pageable) {
         Specification<AccessJournal> specification = ipLike(filter.getIp())
-                .and(groupIdEquals(filter.getUserGroupId()))
-                .and(startAndFinishDateBetween(filter.getStartDate(), filter.getFinishDate()))
+                .and(userGroupIdEquals(filter.getUserGroupId()))
+                .and(loginDateBetween(filter.getStartDate(), filter.getFinishDate()))
                 .and(fetchOrJoinAccessJournalEntities());
 
         return accessJournalRepository.findAll(specification, pageable);
@@ -45,15 +45,15 @@ public class AccessJournalSpecificationHolder {
                 : null;
     }
 
-    private Specification<AccessJournal> groupIdEquals(Long userGroupId) {
+    private Specification<AccessJournal> userGroupIdEquals(Long userGroupId) {
         return (root, query, builder) -> userGroupId != null
                 ? builder.equal(root.get("userGroup").get("id"), userGroupId)
                 : null;
     }
 
-    private Specification<AccessJournal> startAndFinishDateBetween(LocalDateTime startDate, LocalDateTime finishDate) {
+    private Specification<AccessJournal> loginDateBetween(LocalDateTime startDate, LocalDateTime finishDate) {
         return (root, query, builder) -> (startDate != null && finishDate != null)
-                ? builder.between(root.get("startDate"), startDate, finishDate)
+                ? builder.between(root.get("loginDate"), startDate, finishDate)
                 : null;
     }
 
