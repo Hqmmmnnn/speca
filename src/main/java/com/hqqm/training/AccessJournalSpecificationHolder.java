@@ -21,11 +21,11 @@ import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
-public class AccessJournalSpecification {
+public class AccessJournalSpecificationHolder {
 
     private final AccessJournalRepository accessJournalRepository;
 
-    public Page<AccessJournal> findRegisterAccessJournal(AccessJournalFilter filter, Pageable pageable) {
+    public Page<AccessJournal> findAccessJournal(AccessJournalFilter filter, Pageable pageable) {
         Specification<AccessJournal> specification = ipLike(filter.getIp())
                 .and(groupIdEquals(filter.getUserGroupId()))
                 .and(startAndFinishDateBetween(filter.getStartDate(), filter.getFinishDate()))
@@ -36,11 +36,10 @@ public class AccessJournalSpecification {
 
     private Specification<AccessJournal> fetchOrJoinEntities() {
         return (root, query, builder) -> {
-            if (currentQueryIsCountRecords(query)) {
+            if (currentQueryIsCountRecords(query))
                 root.join("userGroup");
-            } else {
+            else
                 root.fetch("userGroup");
-            }
 
             return query.getRestriction();
         };
@@ -56,7 +55,7 @@ public class AccessJournalSpecification {
 
     private Specification<AccessJournal> startAndFinishDateBetween(LocalDateTime startDate, LocalDateTime finishDate) {
         return (root, query, builder) ->
-                startDate != null && finishDate != null ? builder.between(root.get("startDate"), startDate, finishDate) : null;
+                (startDate != null && finishDate != null) ? builder.between(root.get("startDate"), startDate, finishDate) : null;
     }
 
     private boolean currentQueryIsCountRecords(CriteriaQuery<?> criteriaQuery) {

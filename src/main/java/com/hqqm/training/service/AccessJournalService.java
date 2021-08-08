@@ -1,6 +1,6 @@
 package com.hqqm.training.service;
 
-import com.hqqm.training.AccessJournalSpecification;
+import com.hqqm.training.AccessJournalSpecificationHolder;
 import com.hqqm.training.dto.AccessJournalFilter;
 import com.hqqm.training.entity.AccessJournal;
 
@@ -13,9 +13,9 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AccessJournalService {
-    private final AccessJournalSpecification accessJournalSpecification;
+    private final AccessJournalSpecificationHolder accessJournalSpecificationHolder;
 
     public Page<AccessJournal> getRegisterAccessJournal(AccessJournalFilter filter, Pageable pageable) {
-        return accessJournalSpecification.findRegisterAccessJournal(filter, pageable);
+        return accessJournalSpecificationHolder.findAccessJournal(filter, pageable);
     }
 }
