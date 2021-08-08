@@ -3,8 +3,9 @@ package com.hqqm.training;
 import com.hqqm.training.dto.AccessJournalFilter;
 import com.hqqm.training.entity.AccessJournal;
 import com.hqqm.training.repository.AccessJournalRepository;
+import com.sun.istack.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -20,20 +21,21 @@ public class AccessJournalSpecificationHolder {
     private final AccessJournalRepository accessJournalRepository;
 
     public Page<AccessJournal> findAccessJournal(@NotNull AccessJournalFilter filter, Pageable pageable) {
-        Specification<AccessJournal> specification = ipLike(filter.getIp())
+        Specification<AccessJournal> specification = fetchOrJoinAccessJournalEntities()
+                .and(ipLike(filter.getIp()))
                 .and(userGroupIdEquals(filter.getUserGroupId()))
-                .and(loginDateBetween(filter.getStartDate(), filter.getFinishDate()))
-                .and(fetchOrJoinAccessJournalEntities());
+                .and(loginDateBetween(filter.getStartDate(), filter.getFinishDate()));
 
         return accessJournalRepository.findAll(specification, pageable);
     }
 
     private Specification<AccessJournal> fetchOrJoinAccessJournalEntities() {
         return (root, query, builder) -> {
-            if (currentQueryIsCountRecords(query))
+            if (currentQueryIsCountRecords(query)) {
                 root.join("userGroup");
-            else
+            } else {
                 root.fetch("userGroup");
+            }
 
             return query.getRestriction();
         };
