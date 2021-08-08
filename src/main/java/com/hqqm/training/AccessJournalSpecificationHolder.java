@@ -29,12 +29,12 @@ public class AccessJournalSpecificationHolder {
         Specification<AccessJournal> specification = ipLike(filter.getIp())
                 .and(groupIdEquals(filter.getUserGroupId()))
                 .and(startAndFinishDateBetween(filter.getStartDate(), filter.getFinishDate()))
-                .and(fetchOrJoinEntities());
+                .and(fetchOrJoinAccessJournalEntities());
 
         return accessJournalRepository.findAll(specification, pageable);
     }
 
-    private Specification<AccessJournal> fetchOrJoinEntities() {
+    private Specification<AccessJournal> fetchOrJoinAccessJournalEntities() {
         return (root, query, builder) -> {
             if (currentQueryIsCountRecords(query))
                 root.join("userGroup");
@@ -46,16 +46,22 @@ public class AccessJournalSpecificationHolder {
     }
 
     private Specification<AccessJournal> ipLike(String ip) {
-        return (root, query, builder) -> ip != null ? builder.like(root.get("ip"), "%" + ip + "%") : null;
+        return (root, query, builder) -> ip != null
+                ? builder.like(root.get("ip"), "%" + ip + "%")
+                : null;
     }
 
     private Specification<AccessJournal> groupIdEquals(Long userGroupId) {
-        return (root, query, builder) -> userGroupId != null ? builder.equal(root.get("userGroup").get("id"), userGroupId) : null;
+        return (root, query, builder) -> userGroupId != null
+                ? builder.equal(root.get("userGroup").get("id"), userGroupId)
+                : null;
     }
 
     private Specification<AccessJournal> startAndFinishDateBetween(LocalDateTime startDate, LocalDateTime finishDate) {
         return (root, query, builder) ->
-                (startDate != null && finishDate != null) ? builder.between(root.get("startDate"), startDate, finishDate) : null;
+                (startDate != null && finishDate != null)
+                        ? builder.between(root.get("startDate"), startDate, finishDate)
+                        : null;
     }
 
     private boolean currentQueryIsCountRecords(CriteriaQuery<?> criteriaQuery) {
